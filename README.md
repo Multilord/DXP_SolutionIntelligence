@@ -6,6 +6,8 @@ Help enterprise support consultants find and reuse the best applicable resolutio
 
 ## Honest implementation status
 
+The interface uses free, open-source Radix UI primitives, cmdk keyboard search, Motion transitions, Sonner notifications, Lucide icons and locally bundled Inter typography. Press **Ctrl+K** (or **Cmd+K**) to navigate pages, select incidents or open source evidence. The navy-and-teal workspace adapts to mobile screens and respects reduced-motion preferences.
+
 Gemini now powers the main analysis flow, semantic embeddings and cited synthesis. This remains a prototype; live checks and limitations below distinguish implemented code from enterprise readiness.
 
 | Capability | Status at this planning checkpoint |
