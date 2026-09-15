@@ -1,0 +1,9 @@
+.env
+.env.*
+.runtime/
+.venv/
+.git/
+node_modules/
+backend/tests/
+test-data/
+docker-compose.yml

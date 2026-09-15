@@ -1,0 +1,4 @@
+incident,error_code,component,deployment,release,observation,outcome
+TEST-APP-001,APPROVAL_TIMEOUT,FI-AP,Hub,DEMO-R2,alternate path works,route configuration reviewed
+TEST-APP-002,APPROVAL_TIMEOUT,FI-AP,Hub,DEMO-R2,alternate path also fails,route-only precedent withheld
+TEST-APP-003,APPROVAL_TIMEOUT,FI-AP,Embedded,DEMO-R1,deployment mismatch,procedure not applicable

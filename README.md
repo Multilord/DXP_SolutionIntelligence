@@ -6,7 +6,7 @@ Help enterprise support consultants find and reuse the best applicable resolutio
 
 ## Honest implementation status
 
-This README establishes the updated build contract before Gemini implementation. The repository is a prototype, not a completed enterprise integration. Previously prepared MongoDB/Vercel infrastructure changes will be published with the implementation.
+Gemini now powers the main analysis flow, semantic embeddings and cited synthesis. This remains a prototype; live checks and limitations below distinguish implemented code from enterprise readiness.
 
 | Capability | Status at this planning checkpoint |
 |---|---|
@@ -14,13 +14,13 @@ This README establishes the updated build contract before Gemini implementation.
 | System-version applicability and change-history checks | Working deterministic safeguards |
 | Resolution capture, review, publication and outcomes | Working workflow |
 | PDF, DOCX, Markdown, text, CSV and JSON uploads | Working extraction; no OCR |
-| MongoDB persistence and Vercel configuration | Prepared locally; live deployment unverified |
-| Gemini incident understanding and grounded synthesis | Next implementation |
-| Semantic embeddings and hybrid retrieval | Next implementation |
-| Outcome-informed ranking and AI evaluation | Next implementation |
-| SAP and SharePoint live synchronization | Requires connector implementation and real source access; exports supported |
+| MongoDB persistence and Vercel configuration | Atlas works locally and its vector index is ready; Vercel build succeeds but cloud database connectivity needs validation |
+| Gemini incident understanding and grounded synthesis | Implemented; structured output, server-owned source passages and a grounding verification pass |
+| Semantic embeddings and hybrid retrieval | Implemented; versioned 768-dimensional Gemini embeddings and Atlas Vector Search |
+| Outcome-informed ranking and AI evaluation | Implemented version/system-scoped outcomes, automated tests and live synthetic evaluation command |
+| Source synchronization | SharePoint Graph delta and normalized SAP/KB/ticket feed adapters implemented; real source credentials/testing still required |
 
-The existing lexical search is a **limited demo fallback**, not the finished AI engine. Optional AI explanations do not satisfy the main AI requirement. Earlier documents proposing PostgreSQL/pgvector, mandatory Ollama or Docker hosting are historical; this README supersedes those choices.
+Setting LLM_PROVIDER=disabled enables a clearly labelled **limited non-AI demo**. Gemini mode fails explicitly on missing credentials, quota errors, incomplete indexing or invalid citations; it does not silently substitute lexical-only results. Earlier documents proposing PostgreSQL/pgvector, mandatory Ollama or Docker hosting are historical; this README supersedes those choices.
 
 ## Four differentiators
 
@@ -56,7 +56,7 @@ The existing lexical search is a **limited demo fallback**, not the finished AI 
 
 The 16 GB RAM / GTX 1650 Ti laptop is suitable for development because models run remotely. Gemini, Atlas and Vercel may provide limited free usage; unlimited free operation is not guaranteed.
 
-## Environment — updated implementation target
+## Environment
 
 Store secrets in ignored `.env` locally and server-side Vercel environment variables. Never commit keys or use frontend `VITE_` variables for secrets.
 
@@ -68,15 +68,17 @@ LLM_PROVIDER=gemini
 GEMINI_API_KEY=your-key
 GEMINI_MODEL=gemini-2.5-flash
 GEMINI_EMBEDDING_MODEL=gemini-embedding-001
+VECTOR_BACKEND=atlas
+MONGODB_VECTOR_INDEX=atlas_semantic
 ```
 
 Models are configurable and must be available to your account. Gemini configuration is required for the full AI experience. Missing keys, quota errors and unfinished indexes must be explicit, not silently disguised as AI success. Incident descriptions and retrieved source content are sent to Gemini when enabled.
 
-SAP/SharePoint credentials are separate. Filling credential fields does not create a connector. Until configured and tested, source exports and synthetic fixtures are used; the seed data is not actual SAP guidance.
+SAP/SharePoint credentials are separate. See [connector setup and feed schema](CONNECTORS.md). Adapters sync explicitly from Knowledge sources; this is not a background scheduler or native SAP Notes access. Seed data is synthetic, not actual SAP guidance.
 
 ## Run and test
 
-Use Python 3.12 and Node.js 22. The Gemini settings above become runnable with the implementation commit; the pre-integration code supports only its existing providers.
+Use Python 3.12 and Node.js 22. Copy `.env.example` to `.env`, then fill the database URI and Gemini key.
 
 ```powershell
 python -m venv .venv
@@ -93,6 +95,28 @@ python -m pip install -r backend/requirements-dev.txt
 python -m unittest discover -s backend/tests -v
 npm run build
 ```
+
+## Semantic index setup
+
+```powershell
+python -m backend.manage_ai check
+python -m backend.manage_ai index
+python -m backend.manage_ai atlas-index
+```
+
+Wait for the Atlas index to report queryable before analyzing. The Knowledge sources screen also builds embeddings in resumable batches of 16 sections. New content or a changed model/version requires indexing; unpublished drafts and deleted sources cannot enter normal retrieval. This implementation filters current eligible chunk IDs in the Atlas query; large enterprise corpora need a scalable index lifecycle instead of loading eligibility records per request.
+
+The model classifies intent, retrieves evidence and synthesizes findings with exact passage citations. Approved actions retain their reviewed wording/order. Unknown or incompatible context cannot be made safe by generated text. A second model check verifies claim support, but is not a proof of correctness. Repeated analyses reuse cached answers only while knowledge, system context, outcomes and model configuration are unchanged.
+
+## Verification status
+
+- 39 automated tests cover workflow, AI orchestration, draft/version exclusion, forged citations, action constraints, safe failures and source updates/deletions.
+- Frontend production build passed.
+- Live MongoDB Atlas, Gemini generation and Gemini embeddings checks passed. Atlas vector index is queryable.
+- Live end-to-end verification of the final relevance-selection revision is blocked by Gemini quota/provider errors. Earlier runs resolved queue, approval-route and handover paraphrases, and exposed issues that were corrected; they are not a passing final benchmark.
+- Live retrieval evaluation uses six synthetic unseen-wording cases in an isolated database: `python -m backend.manage_ai evaluate`. It spaces requests to reduce free-tier rate-limit failures. Results are not an enterprise accuracy benchmark.
+- Real SAP/SharePoint synchronization is not verified without the organization's credentials and permitted source data.
+- See [Vercel deployment](DEPLOY_VERCEL.md) for deployment requirements and limitations.
 
 ## Acceptance checks
 

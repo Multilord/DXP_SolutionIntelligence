@@ -2,6 +2,8 @@ import io
 import uuid
 import unittest
 import zipfile
+from dataclasses import replace
+from unittest.mock import patch
 from pathlib import Path
 from fastapi.testclient import TestClient
 from backend import run  # Enables the optional offline dependency cache.
@@ -11,6 +13,8 @@ from backend.core import Store, Worker, analyze, assess, extract
 
 class WorkflowTests(unittest.TestCase):
     def setUp(self):
+        self.settings_patch=patch.object(api,'settings',replace(api.settings,llm_provider='disabled'))
+        self.settings_patch.start()
         # Named workspace folders avoid Windows sandbox tempfile ACL issues.
         self.store=Store(Path('.runtime/tests')/uuid.uuid4().hex)
         self.store.seed()
@@ -19,6 +23,7 @@ class WorkflowTests(unittest.TestCase):
         self.client=TestClient(api.app)
 
     def tearDown(self):
+        self.settings_patch.stop()
         self.client.close()
         api.store,api.worker=self.old_store,self.old_worker
 

@@ -16,7 +16,7 @@ from pathlib import Path
 
 
 TABLES = {'incidents', 'systems', 'documents', 'passports', 'changes', 'validations',
-          'outcomes', 'gaps', 'drafts', 'jobs', 'analyses'}
+          'outcomes', 'gaps', 'drafts', 'jobs', 'analyses', 'chunks', 'connectors'}
 
 
 def now():
@@ -32,10 +32,13 @@ class Conflict(Exception):
 
 
 class Store:
+    backend_name = 'SQLite'
+
     def __init__(self, folder: Path):
         self.folder = folder
         folder.mkdir(parents=True, exist_ok=True)
         self.path = folder / 'atlas.sqlite3'
+        self.database_name = str(self.path)
         with self.connect() as db:
             db.execute('PRAGMA journal_mode=WAL')
             for table in TABLES:
@@ -87,6 +90,11 @@ class Store:
                 return
             self._seed(db)
             db.execute("INSERT INTO metadata VALUES('seeded','1')")
+
+    def ping(self):
+        with self.connect() as db:
+            db.execute('SELECT 1').fetchone()
+        return True
 
     def _seed(self, db):
         earlier = (datetime.now(timezone.utc) - timedelta(days=75)).isoformat()
@@ -167,9 +175,9 @@ def split_sections(text):
 def fingerprint(store, incident):
     relevant = [x for x in store.all('changes') if x['system_id']==incident['system_id']]
     body=[incident,store.get('systems',incident['system_id']),relevant,store.all('validations'),
-          [(x['id'],x.get('status'),x.get('version')) for x in store.all('documents')],
+          [(x['id'],x.get('status'),x.get('version'),x.get('indexed')) for x in store.all('documents')],
           [(x['id'],x.get('status'),x.get('version')) for x in store.all('passports')],
-          [x for x in store.all('outcomes') if x['incident_id']==incident['id']]]
+          store.all('outcomes')]
     return hashlib.sha256(json.dumps(body,sort_keys=True).encode()).hexdigest()
 
 
@@ -206,7 +214,7 @@ def assess(passport,system,changes,validations,observations):
     return dict(status=status,reason=reason,checks=checks,changes=applicable_changes,verified_at=verified,question=question if status=='diagnostic' else None)
 
 
-def analyze(store,ident,record_gap=True):
+def analyze(store,ident,record_gap=True,semantic=None,persist=True):
     incident=store.get('incidents',ident);system=store.get('systems',incident['system_id'])
     query=incident['title']+' '+incident['description']
     passports={p['id']:p for p in store.all('passports') if p['status']=='published'}
@@ -220,20 +228,35 @@ def analyze(store,ident,record_gap=True):
         exact=bool(code and re.search(r'(?<!\w)'+re.escape(code)+r'(?!\w)',body,re.IGNORECASE))
         overlap=set(tokens(query)) & set(tokens(body))
         similarity=cosine(query,body)
-        if not exact and (similarity<.16 or len(overlap)<3): continue
+        semantic_hit=(semantic or {}).get(doc['id'])
+        if not exact and (similarity<.16 or len(overlap)<3) and not semantic_hit: continue
         score=.65*similarity+(.3 if exact else 0)+(.05 if p and p['component']==incident['component'] else 0)
+        if semantic is not None:
+            score=.55*(semantic_hit['score'] if semantic_hit else 0)+.25*similarity+(.15 if exact else 0)+(.05 if p and p['component']==incident['component'] else 0)
         key=p['id'] if p else doc['id']
         if key not in candidates:
             a=assess(p,system,changes,validations,incident['observations']) if p else dict(status='needs_review',reason='Relevant source found, but no reviewed procedure is linked.',checks=[],changes=[],verified_at='',question=None)
             candidates[key]=dict(id=key,title=p['title'] if p else doc['title'],passport=p,assessment=a,score=score,evidence=[],signals=[])
         candidate=candidates[key];candidate['score']=max(candidate['score'],score)
         section=max(doc['sections'],key=lambda s:cosine(query,s['text']),default={'id':'section-1','text':doc['content']})
-        candidate['evidence'].append(dict(id=doc['id'],title=doc['title'],source_type=doc['source_type'],version=doc['version'],section_id=section['id'],excerpt=section['text'][:500],synthetic=doc.get('synthetic',False)))
+        if semantic_hit:
+            section=next((s for s in doc['sections'] if s['id']==semantic_hit['section_id']),section)
+        candidate['evidence'].append(dict(id=doc['id'],title=doc['title'],source_type=doc['source_type'],version=doc['version'],section_id=section['id'],excerpt=section['text'],synthetic=doc.get('synthetic',False)))
         sig=[]
         if exact:sig.append('Exact error identifier')
         if p and p['component']==incident['component']:sig.append('Same component')
         if len(overlap)>=3:sig.append('Symptom keywords')
+        if semantic_hit:sig.append('Gemini semantic similarity')
         candidate['signals']=list(dict.fromkeys(candidate['signals']+sig))
+    for c in candidates.values():
+        p=c['passport']
+        same_system={i['id'] for i in store.all('incidents') if i['system_id']==incident['system_id']}
+        outcomes=[o for o in store.all('outcomes') if p and o['passport_id']==p['id'] and o.get('passport_version')==p['version'] and o['incident_id'] in same_system]
+        success=sum(o['status']=='confirmed' for o in outcomes); failed=sum(o['status']=='failed' for o in outcomes)
+        c['outcome_evidence']={'confirmed':success,'failed':failed,'sample_size':success+failed}
+        c['score']+=.08*(success-failed)/(success+failed+4)
+        c['freshness_factor']={'supported':1,'diagnostic':1,'needs_review':.55,'unknown':.4,'incompatible':0}[c['assessment']['status']]
+        c['score']*=c['freshness_factor']
     ordered=sorted(candidates.values(),key=lambda c:({'supported':0,'diagnostic':1,'needs_review':2,'unknown':3,'incompatible':4}[c['assessment']['status']],-c['score']))[:6]
     primary=ordered[0] if ordered else None
     kind='escalation'
@@ -253,7 +276,7 @@ def analyze(store,ident,record_gap=True):
     result=dict(id=uid('RUN'),incident_id=ident,incident_revision=incident['revision'],answer_type=kind,primary=primary,candidates=ordered,explanation=explanation,gap=gap,
                 generation_used=False,retrieval_mode='Local keyword + exact identifier retrieval',created_at=now(),fingerprint=fingerprint(store,incident),
                 failures=[o for o in store.all('outcomes') if o['status']=='failed' and o['incident_id']==ident])
-    store.put('analyses',result)
+    if persist:store.put('analyses',result)
     return result
 
 

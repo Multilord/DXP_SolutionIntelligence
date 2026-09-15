@@ -1,0 +1,8 @@
+[
+ {"seed":"SYN-1043","query":"Our nightly processing never reaches completion because the receiving service is down. Restarting did not help.","expected":"PASS-QUEUE","answer_type":"guided_runbook"},
+ {"seed":"SYN-1042","query":"After rollout, authorising invoices hangs in the main interface. We have not tested another access route yet.","expected":"PASS-ROUTE","answer_type":"diagnostic_question"},
+ {"seed":"SYN-1042","query":"Invoice authorisation freezes in the primary screen after rollout, but succeeds using the other application entry point.","observations":{"alternate_path_works":"yes"},"expected":"PASS-ROUTE","answer_type":"guided_runbook"},
+ {"seed":"SYN-1045","query":"What information should I give the next engineer when my support shift ends?","expected":"PASS-HANDOFF","answer_type":"quick_reference"},
+ {"seed":"SYN-1044","query":"The new export generates a cryptographic digest that differs from the verified fixture.","expected":null,"answer_type":"escalation"},
+ {"seed":"SYN-1044","query":"The office printer produces magenta streaks on paper. How should I replace the toner?","expected":null,"answer_type":"escalation"}
+]

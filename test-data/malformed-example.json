@@ -1,0 +1,4 @@
+{
+  "title": "This JSON is deliberately malformed",
+  "purpose": "Test visible ingestion failure",
+  "missing_closing_brace": true

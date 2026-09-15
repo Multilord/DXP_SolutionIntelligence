@@ -1,0 +1,14 @@
+{
+  "title": "Synthetic cobalt manifest reference",
+  "component": "Integration",
+  "error_identifier": "COBALT_MANIFEST_42",
+  "release": "DEMO-R1",
+  "deployment": "Hub",
+  "observations": [
+    "The export completes before the unexpected signature is reported.",
+    "Compare the manifest with an approved fixture before changing configuration.",
+    "Record the checksum from a repeated synthetic export as validation evidence."
+  ],
+  "trust_status": "supporting evidence only",
+  "synthetic": true
+}
