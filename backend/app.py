@@ -7,7 +7,7 @@ import urllib.request
 from contextlib import asynccontextmanager
 from pathlib import Path
 from starlette.concurrency import run_in_threadpool
-from pymongo.errors import PyMongoError, OperationFailure
+from pymongo.errors import PyMongoError, OperationFailure, ServerSelectionTimeoutError, ConnectionFailure
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
@@ -76,7 +76,17 @@ async def connector_error(request,error):return JSONResponse({'detail':str(error
 async def database_error(request,error):
     if isinstance(error,OperationFailure) and error.has_error_label('TransientTransactionError'):
         return JSONResponse({'detail':'The record changed during this request. Refresh and retry.'},status_code=409)
-    return JSONResponse({'detail':'Database request failed. Check the server connection and retry.'},status_code=503)
+    if isinstance(error,OperationFailure) and error.code in (13,18):
+        code='database_access_denied'
+        detail='Database access denied. Check the server database credentials and permissions.'
+    elif isinstance(error,(ServerSelectionTimeoutError,ConnectionFailure)):
+        code='database_unreachable'
+        detail='The server cannot reach MongoDB. Check Atlas Network Access (including expired temporary rules), cluster availability and the deployed connection configuration. Laptop access does not grant Vercel access.'
+    else:
+        code='database_request_failed'
+        detail='Database request failed. Check the server connection and retry.'
+    # Never return raw driver messages: they may contain hosts or credentials.
+    return JSONResponse({'detail':detail,'code':code},status_code=503)
 
 
 @app.get('/api/workspace')
@@ -106,7 +116,7 @@ def configuration():
 @app.get('/api/model')
 def model():
     if settings.llm_provider == 'gemini':
-        return dict(available=bool(settings.gemini_api_key),provider='gemini',models=[settings.gemini_model],
+        return dict(available=bool(settings.gemini_api_key),configured=bool(settings.gemini_api_key),availability_verified=False,provider='gemini',models=[settings.gemini_model],
                     detail='Gemini configured; availability verified when used.' if settings.gemini_api_key else 'Set GEMINI_API_KEY on the server.',
                     transmits_evidence=True)
     if settings.llm_provider == 'disabled':

@@ -45,6 +45,16 @@ class HostedWorkflows(unittest.TestCase):
             response=self.client.get('/api/health')
             self.assertEqual(response.status_code,503)
             self.assertNotIn('private host',response.text)
+            self.assertEqual(response.json()['code'],'database_unreachable')
+            self.assertIn('expired temporary rules',response.json()['detail'])
+
+    def test_database_permission_error_is_safe_and_actionable(self):
+        from pymongo.errors import OperationFailure
+        with patch.object(self.store,'ping',side_effect=OperationFailure('private credentials',code=18)):
+            response=self.client.get('/api/health')
+        self.assertEqual(response.status_code,503)
+        self.assertEqual(response.json()['code'],'database_access_denied')
+        self.assertNotIn('private credentials',response.text)
 
     def test_capture_is_indexed_before_response_and_publish_reuses(self):
         gap=analyze(self.store,'SYN-1044')['gap']

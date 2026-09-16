@@ -16,7 +16,7 @@ Gemini now powers the main analysis flow, semantic embeddings and cited synthesi
 | System-version applicability and change-history checks | Working deterministic safeguards |
 | Resolution capture, review, publication and outcomes | Working workflow |
 | PDF, DOCX, Markdown, text, CSV and JSON uploads | Working extraction; no OCR |
-| MongoDB persistence and Vercel configuration | Atlas works locally and its vector index is ready; Vercel build succeeds but cloud database connectivity needs validation |
+| MongoDB persistence and Vercel configuration | Real Atlas storage and vector search verified locally. Vercel connectivity regressed to HTTP 503 on September 16; Atlas network access requires checking. |
 | Gemini incident understanding and grounded synthesis | Implemented; structured output, server-owned source passages and a grounding verification pass |
 | Semantic embeddings and hybrid retrieval | Implemented; versioned 768-dimensional Gemini embeddings and Atlas Vector Search |
 | Outcome-informed ranking and AI evaluation | Implemented version/system-scoped outcomes, automated tests and live synthetic evaluation command |
@@ -80,6 +80,8 @@ SAP/SharePoint credentials are separate. See [connector setup and feed schema](C
 
 ## Run and test
 
+For a live demo rehearsal, run `python -m backend.demo_check`. It sends only bundled synthetic fixtures to Gemini, reads their matching Atlas embeddings, and writes results to an isolated temporary local database. It does not alter shared incidents. Scenarios are spaced 60 seconds apart to reduce rate-limit failures; account quota still applies. Use `--cases knowledge_gap quick_reference` to select scenarios. The sanitized report is saved to `.runtime/demo-check.json`. This verifies the laptop-to-service path; deployed `/api/health` must also succeed before recording against Vercel.
+
 Use Python 3.12 and Node.js 22. Copy `.env.example` to `.env`, then fill the database URI and Gemini key.
 
 ```powershell
@@ -112,10 +114,10 @@ The model classifies intent, retrieves evidence and synthesizes findings with ex
 
 ## Verification status
 
-- 39 automated tests cover workflow, AI orchestration, draft/version exclusion, forged citations, action constraints, safe failures and source updates/deletions.
+- 40 automated tests cover workflow, AI orchestration, draft/version exclusion, forged citations, action constraints, safe database failures and source updates/deletions.
 - Frontend production build passed.
 - Live MongoDB Atlas, Gemini generation and Gemini embeddings checks passed. Atlas vector index is queryable.
-- Live end-to-end verification of the final relevance-selection revision is blocked by Gemini quota/provider errors. Earlier runs resolved queue, approval-route and handover paraphrases, and exposed issues that were corrected; they are not a passing final benchmark.
+- September 16 live synthetic rehearsal verified all four scenarios across two runs: diagnostic question, guided runbook, no-precedent escalation and handover quick reference. Cited Gemini findings used real Atlas Vector Search; incompatible/stale alternatives and context invalidation were also verified. Rapid consecutive scenarios hit Gemini rate limits; the remaining scenarios passed after spacing requests. This is not an enterprise accuracy benchmark or proof of Vercel connectivity.
 - Live retrieval evaluation uses six synthetic unseen-wording cases in an isolated database: `python -m backend.manage_ai evaluate`. It spaces requests to reduce free-tier rate-limit failures. Results are not an enterprise accuracy benchmark.
 - Real SAP/SharePoint synchronization is not verified without the organization's credentials and permitted source data.
 - See [Vercel deployment](DEPLOY_VERCEL.md) for deployment requirements and limitations.
