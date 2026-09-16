@@ -2,6 +2,12 @@
 
 This supplements the original readiness report; it does not replace the inspector's evidence.
 
+## Latest update — hosted blocker resolved
+
+The user confirmed that the Atlas network rule had expired and renewed it. Deployed `/api/health`, `/api/workspace`, `/api/index` and `/api/connectors` now succeed. All seven knowledge sections are indexed with no pending sections.
+
+Deployed SYN-1042 returned the expected cited diagnostic question from a genuine cached Gemini result. Deployed SYN-1045 produced a **fresh**, uncached Gemini quick-reference answer using Atlas Vector Search, selected PASS-HANDOFF and included one cited claim (15.19 seconds in this check). These checks used synthetic content. The hosted AI path is now verified; this does not verify every workflow or external recording-agent capacity. Keep the temporary Atlas rule active throughout recording.
+
 ## Verified and addressed
 
 - Local MongoDB connectivity, Gemini generation and Gemini embeddings passed live checks.
@@ -18,7 +24,7 @@ This supplements the original readiness report; it does not replace the inspecto
 - Production MongoDB URI and database name exactly match the working local configuration; values were not printed. The temporary comparison file was deleted.
 - The production Gemini key differed from the successfully tested local key. The production variable has been updated securely to the tested key; a new deployment applies it.
 
-## Still blocked externally
+## Earlier blocker (resolved by the update above)
 
 Vercel database requests return `503 database_unreachable`. Redeployment and a matching URI do not fix Atlas network access. Check Atlas Security → Network Access for expired/missing rules covering the deployment's outbound traffic. Local `/32` access covers only the laptop. Cluster availability or network/TLS restrictions can also cause this class of failure; the exact Atlas rule status still needs confirmation.
 

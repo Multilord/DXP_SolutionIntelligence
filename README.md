@@ -16,7 +16,7 @@ Gemini now powers the main analysis flow, semantic embeddings and cited synthesi
 | System-version applicability and change-history checks | Working deterministic safeguards |
 | Resolution capture, review, publication and outcomes | Working workflow |
 | PDF, DOCX, Markdown, text, CSV and JSON uploads | Working extraction; no OCR |
-| MongoDB persistence and Vercel configuration | Real Atlas storage and vector search verified locally. Vercel connectivity regressed to HTTP 503 on September 16; Atlas network access requires checking. |
+| MongoDB persistence and Vercel configuration | Atlas connectivity restored after renewing the expired network rule. Deployed health, workspace, index and connectors endpoints passed; fresh Gemini + Atlas analysis passed on Vercel. |
 | Gemini incident understanding and grounded synthesis | Implemented; structured output, server-owned source passages and a grounding verification pass |
 | Semantic embeddings and hybrid retrieval | Implemented; versioned 768-dimensional Gemini embeddings and Atlas Vector Search |
 | Outcome-informed ranking and AI evaluation | Implemented version/system-scoped outcomes, automated tests and live synthetic evaluation command |
