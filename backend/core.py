@@ -16,7 +16,7 @@ from pathlib import Path
 
 
 TABLES = {'incidents', 'systems', 'documents', 'passports', 'changes', 'validations',
-          'outcomes', 'gaps', 'drafts', 'jobs', 'analyses', 'chunks', 'connectors'}
+          'outcomes', 'gaps', 'drafts', 'jobs', 'analyses', 'chunks', 'connectors', 'assistance'}
 
 
 def now():

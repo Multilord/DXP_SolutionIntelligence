@@ -21,8 +21,34 @@ Gemini now powers the main analysis flow, semantic embeddings and cited synthesi
 | Semantic embeddings and hybrid retrieval | Implemented; versioned 768-dimensional Gemini embeddings and Atlas Vector Search |
 | Outcome-informed ranking and AI evaluation | Implemented version/system-scoped outcomes, automated tests and live synthetic evaluation command |
 | Source synchronization | SharePoint Graph delta and normalized SAP/KB/ticket feed adapters implemented; real source credentials/testing still required |
+| Structured AI evidence assessment | Gemini rates symptom match, context match and resolution support; code validates citations and applies compatibility restrictions. Weak or contradictory evidence withholds executable steps. |
+| AI-assisted resolution capture | Extracts a draft from consultant notes, identifies missing information, requires human confirmation, then uses the existing review/publication workflow. |
+| AI change-impact suggestions | Compares a recorded change and optional uploaded patch document against older procedures, with server-owned source quotations and expert-review flags. |
+| AI gap clustering | Suggests groups of unresolved incidents, counts distinct incidents and prioritizes by frequency without merging or closing records. |
 
 Setting LLM_PROVIDER=disabled enables a clearly labelled **limited non-AI demo**. Gemini mode fails explicitly on missing credentials, quota errors, incomplete indexing or invalid citations; it does not silently substitute lexical-only results. Earlier documents proposing PostgreSQL/pgvector, mandatory Ollama or Docker hosting are historical; this README supersedes those choices.
+
+## Using the AI assistance upgrades
+
+1. **Incident workspace → Analyze incident:** inspect the evidence rubric below the cited synthesis. Strong/moderate/weak are relevance judgments, not calibrated success probabilities. The backend combines rubric ratings with retrieval signals to order alternatives; Gemini selects the incident-specific precedent. Version/applicability gates remain authoritative. A separate grounding pass checks both the answer and assessment rationales. A failed check publishes no analysis.
+2. **Knowledge gaps → Capture resolution:** paste troubleshooting notes (at least 30 characters) and choose **Prepare AI draft**. Edit the extracted symptoms, prerequisites, limitations, steps and recovery verification. Address missing information and confirm human review before **Capture & index**. The review queue preserves original notes and AI review prompts; publication is still an explicit separate action. Gemini does not generate unrecorded operational steps.
+3. **System timeline → Record mock change:** optionally paste patch details or link a published, indexed patch document uploaded through Knowledge sources. On the recorded event choose **Assess potential impact**. Suggestions cite both the change/patch and the procedure and are labelled **Expert review required**. Procedures verified after that change are excluded. The expert uses the existing revalidation workflow when appropriate; AI never clears compatibility gates or changes procedure approval status.
+4. **Knowledge gaps → Group unresolved gaps:** review suggested groups, distinct incident counts and links back to incidents. Repeated problems appear first. Groups are advisory: no incidents are merged, assigned or closed. Closing/capturing a gap invalidates the saved grouping.
+
+Assistance runs on explicit request and is cached by model, policy and input snapshot in the `assistance` MongoDB collection (or SQLite table locally). Source/version/context changes invalidate reuse; existing saved panels show a stale warning. No extra API keys or services are needed beyond `GEMINI_API_KEY`. Authentication remains excluded. Prototype request limits are 40 unresolved gaps, 20 eligible procedures per impact assessment and 60,000 characters of impact source material; over-limit requests fail explicitly rather than silently omit records. Exact source references are validated; AI judgments and grouping rationales still require expert review.
+
+Offline verification: `python -m unittest discover -s backend/tests -v` and `npm run build`.
+
+Optional live checks consume Gemini quota and use only synthetic fixtures with isolated SQLite writes, never the shared MongoDB corpus:
+
+```powershell
+python -m backend.assistance_check --case capture
+python -m backend.assistance_check --case impact
+python -m backend.assistance_check --case clusters
+python -m backend.assistance_check --case evidence
+```
+
+Run these individually within your provider quota. They exercise live model output, not a comprehensive accuracy benchmark. The `evidence` case uses local exact search over real Gemini embeddings; Atlas connectivity must be verified separately.
 
 ## Four differentiators
 

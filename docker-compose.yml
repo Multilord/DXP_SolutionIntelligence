@@ -1,0 +1,17 @@
+services:
+  mongodb:
+    image: mongo:8.0
+    container_name: solution-atlas-mongodb
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - solution-atlas-mongodb:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  solution-atlas-mongodb:

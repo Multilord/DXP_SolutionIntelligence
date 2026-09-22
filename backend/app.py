@@ -20,6 +20,7 @@ from .core import Conflict, Worker, analyze, fingerprint, now, publish, uid, ext
 from .database import LazyStore
 from .intelligence import AIUnavailable, run_intelligence, index_status, index_batch
 from .connectors import ConnectorError, public_status as connector_status, sync as sync_connector
+from .assistance import assist, latest, snapshot
 
 ROOT=Path(__file__).resolve().parents[1]
 DATA_DIR=settings.storage_dir
@@ -205,15 +206,20 @@ class ChangeInput(BaseModel):
     system_id:str
     label:str=Field(min_length=5,max_length=160)
     impact:str='unknown'
+    notes:str=Field(default='',max_length=12000)
+    document_id:str=Field(default='',max_length=100)
 
 
 @app.post('/api/changes',status_code=201)
 def change(body:ChangeInput):
     if body.impact not in ('unknown','incompatible'):raise HTTPException(422,'Choose unknown or incompatible impact.')
+    if body.document_id:
+        document=store.get('documents',body.document_id)
+        if not document.get('indexed') or document['status']!='published':raise Conflict('Choose an indexed, published patch document.')
     with store.connect() as db:
         db.execute('BEGIN IMMEDIATE');system=store.get('systems',body.system_id,db)
         system['revision']+=1;store.put('systems',system,db)
-        item=dict(id=uid('CHG'),system_id=body.system_id,component=system['component'],label=body.label,impact=body.impact,status='applied',effective_at=now(),recorded_at=now(),synthetic=True)
+        item=dict(id=uid('CHG'),system_id=body.system_id,component=system['component'],label=body.label,impact=body.impact,notes=body.notes,document_id=body.document_id,status='applied',effective_at=now(),recorded_at=now(),synthetic=True)
         store.put('changes',item,db)
     return item
 
@@ -272,20 +278,39 @@ class CaptureInput(BaseModel):
     title:str=Field(min_length=5,max_length=180)
     steps:list[str]=Field(min_length=1,max_length=12)
     validation:str=Field(min_length=20,max_length=2000)
+    symptoms:list[str]=Field(default_factory=list,max_length=6)
+    prerequisites:list[str]=Field(default_factory=list,max_length=6)
+    limitations:list[str]=Field(default_factory=list,max_length=6)
+    assistance_id:str=Field(default='',max_length=100)
+    human_reviewed:bool=False
 
 
 @app.post('/api/gaps/{ident}/capture',status_code=202)
 def capture(ident:str,body:CaptureInput):
+    if len(body.title.strip())<5 or len(body.validation.strip())<20:raise HTTPException(422,'Provide a meaningful title and at least 20 characters of verification evidence.')
     if any(len(s.strip())<5 or len(s)>1000 for s in body.steps):raise HTTPException(422,'Each step needs 5–1,000 characters.')
+    if any(not s.strip() or len(s)>2000 for s in body.symptoms+body.prerequisites+body.limitations):raise HTTPException(422,'Context entries need 1–2,000 characters.')
+    provenance={}
+    if body.assistance_id:
+        suggestion=store.get('assistance',body.assistance_id)
+        if suggestion['kind']!='capture' or suggestion['target']!=ident:raise Conflict('This suggestion belongs to a different gap.')
+        if not body.human_reviewed:raise Conflict('Review the AI draft and resolve missing information before capturing.')
+        if suggestion['snapshot']!=snapshot(store,'capture',ident,suggestion):raise Conflict('Incident context changed. Generate the draft again.')
+        provenance={'assistance_id':body.assistance_id,'human_reviewed':True,'consultant_notes':suggestion['notes'],
+                    'ai_missing_information':suggestion['result']['missing_information']}
+    context_fields={k:getattr(body,k) for k in ('symptoms','prerequisites','limitations')}
     with store.connect() as db:
         db.execute('BEGIN IMMEDIATE');gap=store.get('gaps',ident,db)
         existing=next((d for d in store.all('drafts',db) if d['gap_id']==ident and d['state']!='rejected'),None)
         if existing:return existing
         incident=store.get('incidents',gap['incident_id'],db);system=store.get('systems',incident['system_id'],db)
         p=dict(id=uid('PASS'),title=body.title,component=incident['component'],error_code=incident['error_code'],system_id=system['id'],release=system['release'],deployment=system['deployment'],verified_at=now(),question=None,steps=body.steps,validation=body.validation,route='',answer_type='guided_runbook',version=1,status='draft',owner='Local reviewer',synthetic=incident.get('synthetic',False))
+        p.update(context_fields)
         content=f"{body.title}\n\n{incident['description']}\n\nError: {incident['error_code']}\nComponent: {incident['component']}\n\n"+'\n'.join(f'{i+1}. {s}' for i,s in enumerate(body.steps))+'\n\nValidation: '+body.validation
+        content+='\n\n'+'\n\n'.join(k.title()+': '+ '; '.join(v) for k,v in context_fields.items() if v)
         doc=dict(id=uid('DOC'),title=body.title,source_type='Consultant capture',passport_id=p['id'],content=content,sections=[],version=1,status='draft',indexed=False,synthetic=incident.get('synthetic',False),created_at=now())
         draft=dict(id=uid('DRAFT'),gap_id=ident,incident_id=incident['id'],passport_id=p['id'],document_id=doc['id'],document_version=1,title=body.title,steps=body.steps,validation=body.validation,state='indexing',created_at=now())
+        draft.update(context_fields);draft.update(provenance)
         job=dict(id=uid('JOB'),kind='capture',draft_id=draft['id'],state='queued',stage='Queued for indexing',created_at=now())
         outcome=dict(id=uid('OUT'),incident_id=incident['id'],passport_id=p['id'],status='confirmed',notes=body.validation,created_at=now())
         gap['state']='indexing'
@@ -296,6 +321,31 @@ def capture(ident:str,body:CaptureInput):
             job.update(state='complete',stage='Indexed',completed_at=now())
         for table,obj in [('passports',p),('documents',doc),('drafts',draft),('jobs',job),('gaps',gap),('outcomes',outcome)]:store.put(table,obj,db)
     return draft
+
+
+class DraftNotes(BaseModel):
+    notes:str=Field(min_length=30,max_length=12000)
+
+
+@app.post('/api/gaps/{ident}/suggest-resolution')
+def suggest_resolution(ident:str,body:DraftNotes):
+    return assist(store,settings,'capture',ident,body.notes)
+
+
+@app.post('/api/changes/{ident}/assess-impact')
+def assess_impact(ident:str):
+    return assist(store,settings,'impact',ident)
+
+
+@app.post('/api/gaps/cluster')
+def cluster_gaps():
+    return assist(store,settings,'clusters')
+
+
+@app.get('/api/assistance/{kind}')
+def read_assistance(kind:str,target:str=''):
+    if kind not in ('capture','impact','clusters'):raise HTTPException(422,'Unknown assistance type.')
+    return latest(store,kind,target)
 
 
 @app.post('/api/drafts/{ident}/publish')

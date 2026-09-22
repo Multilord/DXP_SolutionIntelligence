@@ -23,6 +23,9 @@ class FakeGemini:
         candidates=data['candidates']
         candidate=next((c for c in candidates if c['id']=='PASS-QUEUE'),candidates[0] if candidates else None)
         return Selection(selected_id=candidate['id'] if candidate else '',
+                         assessments=[{'candidate_id':c['id'],'symptom_match':'strong','context_match':'moderate',
+                                       'resolution_support':'strong','rationale':'The documented source describes this symptom.',
+                                       'source_ids':[c['source_ids'][0]],'contradictions':[],'missing_context':[]} for c in candidates],
                          claims=[{'text':'The documented source describes this symptom.','source_ids':[candidate['source_ids'][0]]}] if candidate else [],questions=[])
 
 
