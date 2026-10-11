@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import {OverhaulApp} from './overhaul';
 import { createRoot } from 'react-dom/client';
 import { Activity, ArrowDownToLine, ArrowRight, ArrowUpRight, BookOpen, Check, CheckCheck, CheckCircle2, ChevronDown, ChevronRight, CircleHelp, Clock3, Database, FileText, FolderOpen, GitBranch, History, Layers3, Loader2, Network, Plus, Search, ShieldCheck, Sparkles, Upload, X, AlertTriangle, ListChecks, MessageSquare, CircleDot, RefreshCw, ExternalLink } from 'lucide-react';
 import './styles.css';
@@ -126,4 +127,4 @@ function Heading({eyebrow,title,description,action}:{eyebrow:string;title:string
 function Empty({icon,title,text,action}:{icon:React.ReactNode;title:string;text:string;action?:React.ReactNode}){return <section className="empty-state panel"><div className="ready-orbit">{icon}</div><h2>{title}</h2><p>{text}</p>{action}</section>;}
 function Field({label,value,onChange,area=false,min=1,optional=false}:{label:string;value:string;onChange:(v:string)=>void;area?:boolean;min?:number;optional?:boolean}){return <label className="field">{label}{area?<textarea rows={4} value={value||''} minLength={min} required={!optional} maxLength={8000} onChange={e=>onChange(e.target.value)}/>:<input value={value||''} required={!optional} minLength={min} maxLength={180} onChange={e=>onChange(e.target.value)}/>}</label>;}
 
-createRoot(document.getElementById('root')!).render(<App/>);
+createRoot(document.getElementById('root')!).render(new URLSearchParams(window.location.search).get('legacy')==='1'?<App/>:<OverhaulApp/>);
