@@ -1,0 +1,88 @@
+[
+  {
+    "doc_id": "SP-001",
+    "source": "SharePoint",
+    "customer": "Aurora Foods Bhd",
+    "title": "AMS Runbook: Change Vendor Bank Details",
+    "last_updated": "2022-03-14",
+    "owner": "AMS FI team (departed consultant)",
+    "authority": "team",
+    "content": "Use transaction XK02 to change vendor bank details. Check changes in FK04. Dual approval via email to Finance Controller.",
+    "applies_to": {
+      "platform": "ECC",
+      "release": "ECC 6.0 EHP8"
+    }
+  },
+  {
+    "doc_id": "SP-002",
+    "source": "SharePoint",
+    "customer": "Aurora Foods Bhd",
+    "title": "PO Release Strategy Troubleshooting",
+    "last_updated": "2024-08-02",
+    "owner": "AMS MM team",
+    "authority": "team",
+    "content": "If PO has no release strategy, check characteristic values and classification of the release strategy for the plant. Confirm release group and code.",
+    "applies_to": {
+      "platform": "ECC",
+      "release": "ECC 6.0 EHP8"
+    }
+  },
+  {
+    "doc_id": "SP-003",
+    "source": "Knowledge Base",
+    "customer": null,
+    "title": "Posting Period Checklist",
+    "last_updated": "2023-11-10",
+    "owner": "AMS Finance",
+    "authority": "official",
+    "content": "Check period control for the company code, then the posting period variant assignment. Open the period with Finance approval.",
+    "applies_to": {
+      "platform": "ECC",
+      "release": "ECC 6.0 EHP8"
+    },
+    "note": "Incomplete for S/4HANA: no asset period or custom validation checks."
+  },
+  {
+    "doc_id": "SP-004",
+    "source": "Personal folder",
+    "customer": "Aurora Foods Bhd",
+    "title": "Notes: ZFI_DAILY_UPLOAD cancelled",
+    "last_updated": "2025-01-20",
+    "owner": "Individual consultant",
+    "authority": "personal",
+    "content": "If ZFI_DAILY_UPLOAD is cancelled, just restart from SM37 in the morning.",
+    "applies_to": {
+      "platform": "ECC",
+      "release": "ECC 6.0 EHP8"
+    },
+    "note": "Contradicts root cause found in SYN-H032."
+  },
+  {
+    "doc_id": "SP-005",
+    "source": "Knowledge Base",
+    "customer": null,
+    "title": "IDoc Reprocessing Guide",
+    "last_updated": "2024-05-05",
+    "owner": "AMS Integration",
+    "authority": "official",
+    "content": "For IDocs in status 51, read the error text first, fix the cause, then reprocess via the standard IDoc reprocessing transaction. Do not force-process.",
+    "applies_to": {
+      "platform": "All",
+      "release": "All"
+    }
+  },
+  {
+    "doc_id": "SP-006",
+    "source": "SharePoint",
+    "customer": "Cendana Retail Sdn Bhd",
+    "title": "Cendana PR Approval Matrix",
+    "last_updated": "2025-09-01",
+    "owner": "Cendana procurement lead",
+    "authority": "customer",
+    "content": "Approval thresholds by document type. ZNB: manager approval above 5,000 MYR. Managed through flexible workflow.",
+    "applies_to": {
+      "platform": "S/4HANA On-Premise",
+      "release": "S/4HANA 2023"
+    }
+  }
+]

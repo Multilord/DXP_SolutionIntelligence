@@ -1,5 +1,11 @@
 # Solution Atlas — AI-Powered Solution Intelligence
 
+## October overhaul: v2 is now the default workspace
+
+The NTT interview-driven implementation introduces customer-scoped investigations, applicability dimensions, source conflicts, diagnostic observations, private/generalised publication, recurrence insights and audit records. See [the v2 implementation and access guide](OVERHAUL_IMPLEMENTATION.md) for setup, synthetic demo versus protected access, verification, and remaining enterprise work.
+
+The earlier implementation notes below describe **v1**. Its UI is retained at `?legacy=1`; unscoped legacy APIs are disabled in v2 protected mode. V2 uses a separate `atlas_records` collection and does not overwrite existing records. In particular, do not read the v1 authentication or vector-index statements below as descriptions of v2.
+
 Help enterprise support consultants find and reuse the best applicable resolution, inspect its evidence, and capture new knowledge when no reliable precedent exists.
 
 **Updated stack: Gemini API + MongoDB Atlas + Vercel. No Claude API. Authentication is excluded from this prototype.**

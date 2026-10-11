@@ -39,11 +39,16 @@ async def lifespan(app):
 
 
 app=FastAPI(title='Solution Atlas',version='0.2.0',lifespan=lifespan)
+from .overhaul_api import router as overhaul_router
+app.include_router(overhaul_router)
 app.add_middleware(TrustedHostMiddleware,allowed_hosts=settings.allowed_hosts())
 
 
 @app.middleware('http')
 async def local_guard(request,call_next):
+    import os
+    if (os.getenv('ATLAS_V2_PROTECTED','').lower()=='true' or os.getenv('ATLAS_ACCESS_TOKENS')) and request.url.path.startswith('/api/') and not request.url.path.startswith('/api/v2/') and request.url.path not in ('/api/health','/api/configuration'):
+        return JSONResponse({'detail':'Legacy unscoped APIs are disabled in protected mode.'},status_code=410)
     origin=request.headers.get('origin')
     allowed_origins={'http://localhost:8000','http://127.0.0.1:8000','http://localhost:5173','http://127.0.0.1:5173'}
     if settings.serverless:

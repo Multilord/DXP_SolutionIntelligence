@@ -1,0 +1,195 @@
+[
+  {
+    "id": "SYN-Q01",
+    "tenant": "Cendana Retail Sdn Bhd",
+    "expected_answer_type": "guided_runbook",
+    "correct_precedent_ids": [
+      "SYN-H002"
+    ],
+    "not_applicable_lookalikes": [
+      {
+        "id": "SYN-H001",
+        "reason": "ECC release strategy fix; S/4 uses flexible workflow"
+      },
+      {
+        "id": "SYN-H003",
+        "reason": "Public Cloud role/responsibility fix"
+      }
+    ],
+    "expected_flags": [
+      "release_mismatch_on_lookalikes",
+      "relevant_change_detected"
+    ]
+  },
+  {
+    "id": "SYN-Q02",
+    "tenant": "Delta Pharma Bhd",
+    "expected_answer_type": "diagnostic_question",
+    "correct_precedent_ids": [
+      "SYN-H011",
+      "SYN-H012"
+    ],
+    "not_applicable_lookalikes": [
+      {
+        "id": "SYN-H014",
+        "reason": "Workaround-only closure with no root cause"
+      }
+    ],
+    "expected_flags": [
+      "multiple_possible_causes",
+      "weak_resolution_downgraded"
+    ],
+    "notes": "Should ask whether a condition record exists and whether the G/L account is extended to the company code."
+  },
+  {
+    "id": "SYN-Q03",
+    "tenant": "Borneo Steel Sdn Bhd",
+    "expected_answer_type": "diagnostic_question",
+    "correct_precedent_ids": [
+      "GEN-CUSTOM-PERIOD",
+      "GEN-SYN-H007"
+    ],
+    "not_applicable_lookalikes": [
+      {
+        "id": "SYN-H005",
+        "reason": "Simple period-open fix; period already confirmed open"
+      },
+      {
+        "id": "SYN-H006",
+        "reason": "Variant assignment issue; verify first"
+      }
+    ],
+    "expected_flags": [
+      "same_symptom_different_cause",
+      "customization_possible"
+    ],
+    "notes": "Check asset period and custom validations before reopening period."
+  },
+  {
+    "id": "SYN-Q04",
+    "tenant": "Borneo Steel Sdn Bhd",
+    "expected_answer_type": "quick_reference",
+    "correct_precedent_ids": [
+      "SYN-H016"
+    ],
+    "not_applicable_lookalikes": [
+      {
+        "id": "SYN-H017",
+        "reason": "Public Cloud business roles"
+      },
+      {
+        "id": "SYN-H015",
+        "reason": "GUI transaction authorization, not Fiori catalog"
+      }
+    ],
+    "expected_flags": [
+      "minor_release_difference_still_valid"
+    ]
+  },
+  {
+    "id": "SYN-Q05",
+    "tenant": "Delta Pharma Bhd",
+    "expected_answer_type": "guided_runbook",
+    "correct_precedent_ids": [
+      "SYN-H020",
+      "SYN-H005"
+    ],
+    "not_applicable_lookalikes": [
+      {
+        "id": "SYN-H019",
+        "reason": "Status 56 partner profile problem, different cause"
+      },
+      {
+        "id": "SYN-H022",
+        "reason": "Status 64 workaround"
+      }
+    ],
+    "expected_flags": [
+      "cross_scenario_link"
+    ]
+  },
+  {
+    "id": "SYN-Q06",
+    "tenant": "Cendana Retail Sdn Bhd",
+    "expected_answer_type": "escalation",
+    "correct_precedent_ids": [
+      "SYN-H024"
+    ],
+    "not_applicable_lookalikes": [
+      {
+        "id": "SYN-H023",
+        "reason": "Memory dump on ECC; different error and release"
+      }
+    ],
+    "expected_flags": [
+      "customized_system",
+      "developer_handoff"
+    ]
+  },
+  {
+    "id": "SYN-Q07",
+    "tenant": "Borneo Steel Sdn Bhd",
+    "expected_answer_type": "diagnostic_question",
+    "correct_precedent_ids": [
+      "GEN-JOB-LOCK"
+    ],
+    "not_applicable_lookalikes": [],
+    "expected_flags": [
+      "recurrence_reported",
+      "suggest_problem_investigation"
+    ],
+    "notes": "Ask whether another job overlaps in the failure window. H032 applies only if confirmed."
+  },
+  {
+    "id": "SYN-Q08",
+    "tenant": "Evergreen Logistics Sdn Bhd",
+    "expected_answer_type": "quick_reference",
+    "correct_precedent_ids": [
+      "SYN-H037"
+    ],
+    "not_applicable_lookalikes": [
+      {
+        "id": "SYN-H036",
+        "reason": "Superseded workaround; field now exists"
+      }
+    ],
+    "expected_flags": [
+      "stale_precedent_superseded"
+    ]
+  },
+  {
+    "id": "SYN-Q09",
+    "tenant": "Aurora Foods Bhd",
+    "expected_answer_type": "quick_reference",
+    "correct_precedent_ids": [
+      "GEN-SYN-H039"
+    ],
+    "not_applicable_lookalikes": [
+      {
+        "id": "SYN-H038",
+        "reason": "ECC-era procedure"
+      }
+    ],
+    "expected_flags": [
+      "conflicting_sources",
+      "outdated_sharepoint_doc",
+      "source_of_truth_is_system"
+    ],
+    "notes": "SP-001 conflicts with H039.",
+    "conditional_precedent_ids": [
+      "GEN-SYN-H040"
+    ]
+  },
+  {
+    "id": "SYN-Q10",
+    "tenant": "Evergreen Logistics Sdn Bhd",
+    "expected_answer_type": "escalation",
+    "correct_precedent_ids": [],
+    "not_applicable_lookalikes": [],
+    "expected_flags": [
+      "no_precedent",
+      "open_knowledge_gap"
+    ],
+    "notes": "Engine should say no usable precedent and open a knowledge gap, not force a weak match."
+  }
+]

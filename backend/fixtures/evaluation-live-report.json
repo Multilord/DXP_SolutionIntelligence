@@ -1,0 +1,53 @@
+{
+  "created_at": "2026-10-11T14:15:59.984593+00:00",
+  "dataset": "Synthetic corrected fixtures; not an enterprise benchmark",
+  "mode": "Gemini live evaluation",
+  "case_count": 1,
+  "keyword_top3": {
+    "hits": 1,
+    "eligible_cases": 1
+  },
+  "rules_top3": {
+    "hits": 1,
+    "eligible_cases": 1
+  },
+  "ai_top3": {
+    "hits": 1,
+    "eligible_cases": 1
+  },
+  "false_applicable_rate": {
+    "hits": 0,
+    "eligible_cases": 1
+  },
+  "cases": [
+    {
+      "id": "SYN-Q04",
+      "keyword_top3": [
+        "GEN-SYN-H016",
+        "GEN-SYN-H017",
+        "GEN-SYN-H015"
+      ],
+      "rules_top3": [
+        "GEN-SYN-H016",
+        "GEN-SYN-H017",
+        "GEN-SYN-H015"
+      ],
+      "keyword_hit": true,
+      "rules_hit": true,
+      "ai_answer": "diagnostic_question",
+      "answer_type_correct": false,
+      "ai_top3": [
+        "GEN-SYN-H016",
+        "GEN-SYN-H017",
+        "GEN-SYN-H003"
+      ],
+      "ai_hit": true,
+      "false_applicable": false
+    }
+  ],
+  "limitations": [
+    "Ten development cases, not held-out accuracy evidence.",
+    "Historical closures are evidence, not approved procedures; action gating is deliberately conservative.",
+    "No operational savings measured."
+  ]
+}

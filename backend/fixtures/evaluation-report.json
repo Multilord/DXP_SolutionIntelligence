@@ -1,0 +1,173 @@
+{
+  "created_at": "2026-10-11T14:12:42.667755+00:00",
+  "dataset": "Synthetic corrected fixtures; not an enterprise benchmark",
+  "mode": "Offline keyword vs applicability-rule ranking; AI NOT evaluated",
+  "case_count": 10,
+  "keyword_top3": {
+    "hits": 9,
+    "eligible_cases": 9
+  },
+  "rules_top3": {
+    "hits": 9,
+    "eligible_cases": 9
+  },
+  "ai_top3": null,
+  "false_applicable_rate": null,
+  "cases": [
+    {
+      "id": "SYN-Q01",
+      "keyword_top3": [
+        "SYN-H002",
+        "SP-006",
+        "GEN-SYN-H001"
+      ],
+      "rules_top3": [
+        "SYN-H002",
+        "SP-006",
+        "SYN-H040"
+      ],
+      "keyword_hit": true,
+      "rules_hit": true
+    },
+    {
+      "id": "SYN-Q02",
+      "keyword_top3": [
+        "SYN-H011",
+        "SYN-H014",
+        "GEN-SYN-H012"
+      ],
+      "rules_top3": [
+        "SYN-H011",
+        "SYN-H014",
+        "GEN-SYN-H012"
+      ],
+      "keyword_hit": true,
+      "rules_hit": true
+    },
+    {
+      "id": "SYN-Q03",
+      "keyword_top3": [
+        "GEN-SYN-H005",
+        "SYN-H007",
+        "GEN-SYN-H006"
+      ],
+      "rules_top3": [
+        "SYN-H007",
+        "GEN-CUSTOM-PERIOD",
+        "GEN-SYN-H039"
+      ],
+      "keyword_hit": true,
+      "rules_hit": true
+    },
+    {
+      "id": "SYN-Q04",
+      "keyword_top3": [
+        "GEN-SYN-H016",
+        "GEN-SYN-H017",
+        "GEN-SYN-H015"
+      ],
+      "rules_top3": [
+        "GEN-SYN-H016",
+        "GEN-SYN-H017",
+        "GEN-SYN-H015"
+      ],
+      "keyword_hit": true,
+      "rules_hit": true
+    },
+    {
+      "id": "SYN-Q05",
+      "keyword_top3": [
+        "SYN-H020",
+        "SYN-H005",
+        "GEN-SYN-H007"
+      ],
+      "rules_top3": [
+        "SYN-H020",
+        "SYN-H005",
+        "GEN-SYN-H006"
+      ],
+      "keyword_hit": true,
+      "rules_hit": true
+    },
+    {
+      "id": "SYN-Q06",
+      "keyword_top3": [
+        "SYN-H024",
+        "SYN-H023",
+        "SYN-H021"
+      ],
+      "rules_top3": [
+        "SYN-H024",
+        "SYN-H021",
+        "SYN-H023"
+      ],
+      "keyword_hit": true,
+      "rules_hit": true
+    },
+    {
+      "id": "SYN-Q07",
+      "keyword_top3": [
+        "GEN-JOB-LOCK",
+        "GEN-SYN-H014",
+        "SYN-H025"
+      ],
+      "rules_top3": [
+        "GEN-JOB-LOCK",
+        "SYN-H025",
+        "GEN-SYN-H014"
+      ],
+      "keyword_hit": true,
+      "rules_hit": true
+    },
+    {
+      "id": "SYN-Q08",
+      "keyword_top3": [
+        "SYN-H036",
+        "SYN-H037",
+        "SYN-H003"
+      ],
+      "rules_top3": [
+        "SYN-H037",
+        "SYN-H003",
+        "SYN-H036"
+      ],
+      "keyword_hit": true,
+      "rules_hit": true
+    },
+    {
+      "id": "SYN-Q09",
+      "keyword_top3": [
+        "GEN-SYN-H039",
+        "SYN-H038",
+        "SP-001"
+      ],
+      "rules_top3": [
+        "GEN-SYN-H039",
+        "GEN-SYN-H040",
+        "GEN-SYN-H010"
+      ],
+      "keyword_hit": true,
+      "rules_hit": true
+    },
+    {
+      "id": "SYN-Q10",
+      "keyword_top3": [
+        "SYN-H017",
+        "GEN-SYN-H016",
+        "SYN-H037"
+      ],
+      "rules_top3": [
+        "SYN-H017",
+        "SYN-H037",
+        "GEN-CUSTOM-PERIOD"
+      ],
+      "keyword_hit": null,
+      "rules_hit": null
+    }
+  ],
+  "limitations": [
+    "Ten development cases, not held-out accuracy evidence.",
+    "Historical closures are evidence, not approved procedures; action gating is deliberately conservative.",
+    "No operational savings measured."
+  ]
+}
